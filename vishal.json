@@ -1,0 +1,105 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for EC2, VPC, S3, and Security Groups",
+  "Parameters": {
+    "InstanceType": {
+      "Type": "String",
+      "Default": "t2.micro",
+      "Description": "EC2 instance type"
+    }
+  },
+  "Resources": {
+    "MyVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsSupport": true,
+        "EnableDnsHostnames": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MyVPC"
+          }
+        ]
+      }
+    },
+    "MySubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySubnet"
+          }
+        ]
+      }
+    },
+    "MySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow inbound SSH traffic",
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "ImageId": "ami-01989ebfd388ea377",
+        "KeyName": "server",
+        "SubnetId": {
+          "Ref": "MySubnet"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "MySecurityGroup"
+          }
+        ]
+      }
+    },
+    "MyS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "alanwalker123",
+        "AccessControl": "Private"
+      }
+    }
+  },
+  "Outputs": {
+    "EC2InstanceId": {
+      "Description": "ID of the created EC2 instance",
+      "Value": {
+        "Ref": "MyEC2Instance"
+      }
+    },
+    "VPCId": {
+      "Description": "ID of the created VPC",
+      "Value": {
+        "Ref": "MyVPC"
+      }
+    },
+    "S3BucketName": {
+      "Description": "Name of the created S3 bucket",
+      "Value": {
+        "Ref": "MyS3Bucket"
+      }
+    }
+  }
+}
